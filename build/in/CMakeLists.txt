@@ -28,7 +28,7 @@ include(FetchContent)
 #       conan
 #       cpack
 FetchContent_Declare(
-  _project_options 
+  water_river_project_options 
   URL "https://github.com/aminya/project_options/archive/refs/tags/v0.24.0.zip"
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
@@ -52,10 +52,10 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
 
-FetchContent_MakeAvailable(_project_options Boost)
+FetchContent_MakeAvailable(water_river_project_options Boost)
 
-include("${_project_options_SOURCE_DIR}/Index.cmake")
-include("${_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
+include("${water_river_project_options_SOURCE_DIR}/Index.cmake")
+include("${water_river_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
 include("${Boost_SOURCE_DIR}/tools/boost_install/BoostConfig.cmake")
 
 # [vcpkg]
