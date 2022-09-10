@@ -38,6 +38,18 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
 FetchContent_MakeAvailable(Boost)
+include("${Boost_SOURCE_DIR}/tools/boost_install/BoostConfig.cmake")
+
+# [dist:pkg:vcpkg:todo] [todo vcpkg]
+
+# [project]
+project(
+  water.river
+  VERSION 0.0.1
+  DESCRIPTION "river: a server"
+  HOMEPAGE_URL "https://edant.io"
+  LANGUAGES CXX
+)
 
 # [deps:threads]
 if(APPLE)
@@ -53,18 +65,7 @@ else()
     find_package(${DEPENDENCY} CONFIG REQUIRED)
 endforeach()
 endif()
-include("${Boost_SOURCE_DIR}/tools/boost_install/BoostConfig.cmake")
 
-# [dist:pkg:vcpkg:todo] [todo vcpkg]
-
-# [project]
-project(
-  water.river
-  VERSION 0.0.1
-  DESCRIPTION "river: a server"
-  HOMEPAGE_URL "https://edant.io"
-  LANGUAGES CXX
-)
 
 # [dist:sha] [sha]
 set(GIT_SHA "Unknown" CACHE STRING "SHA this build was generated from")
