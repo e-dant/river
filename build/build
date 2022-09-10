@@ -10,7 +10,10 @@ build::build() {
   cc::init() {
     local ok;
     local llvm_dir="$thisdir/../../../tools/compilers/llvm"
-    if ! test -n "$CC" -a -n "$CXX"
+    if test -n "$CC" -a -n "$CXX"
+    then
+      ok=0
+    elif test -d "$llvm_dir"
     then
       if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
       then
@@ -20,15 +23,15 @@ build::build() {
       fi
       export CC="$llvm_dir/build/out/$llvm_version/bin/clang"
       export CXX="$llvm_dir/build/out/$llvm_version/bin/clang++"
+    else
+      export CC="$(which clang)"
+      export CXX="$(which clang++)"
     fi
     return $ok
   }
 
   cmake::build() {
-    cmake \
-      -D CMAKE_C_COMPILER="$CC" \
-      -D CMAKE_CXX_COMPILER="$CXX" \
-      -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
+    cmake -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
       && cmake --build out --config Release
     return $?
   }
@@ -43,6 +46,7 @@ build::build() {
   cc::init \
     && cmake::build \
     && compdb::ln
+
   ok=$?
 
   cd "$lastdir"
