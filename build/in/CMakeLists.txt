@@ -1,10 +1,12 @@
 # [general:link]
-
 cmake_minimum_required(
   VERSION 3.16)
 
 # [cmp:135]
 cmake_policy(SET CMP0135 NEW)
+
+# [artifact:compdb] [compdp]
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # [fetch]
 include(FetchContent)
@@ -15,6 +17,9 @@ FetchContent_Declare(
   URL "https://github.com/aminya/project_options/archive/refs/tags/v0.24.0.zip"
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
+FetchContent_MakeAvailable(water_river_project_options)
+include("${water_river_project_options_SOURCE_DIR}/Index.cmake")
+include("${water_river_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
 
 # [deps:boost]
 set(BOOST_ENABLE_CMAKE         ON)
@@ -32,11 +37,22 @@ FetchContent_Declare(
   GIT_TAG boost-1.80.0
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
+FetchContent_MakeAvailable(Boost)
 
-FetchContent_MakeAvailable(water_river_project_options Boost)
-
-include("${water_river_project_options_SOURCE_DIR}/Index.cmake")
-include("${water_river_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
+# [deps:threads]
+if(APPLE)
+  set(CMAKE_THREAD_LIBS_INIT       -lpthread)
+  set(CMAKE_HAVE_THREADS_LIBRARY   1)
+  set(CMAKE_USE_WIN32_THREADS_INIT 0)
+  set(CMAKE_USE_PTHREADS_INIT      1)
+  set(THREADS_PREFER_PTHREAD_FLAG  ON)
+  find_package(Threads REQUIRED)
+else()
+  set(DEPENDENCIES_CONFIGURED Threads)
+  foreach(DEPENDENCY ${DEPENDENCIES_CONFIGURED})
+    find_package(${DEPENDENCY} CONFIG REQUIRED)
+endforeach()
+endif()
 include("${Boost_SOURCE_DIR}/tools/boost_install/BoostConfig.cmake")
 
 # [dist:pkg:vcpkg:todo] [todo vcpkg]
@@ -54,19 +70,11 @@ project(
 set(GIT_SHA "Unknown" CACHE STRING "SHA this build was generated from")
 string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 
-# [artifact:compdb] [compdp]
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # [config:po] [project options]
 dynamic_project_options(
   ENABLE_CACHE
   ENABLE_INTERPROCEDURAL_OPTIMIZATION
   ENABLE_NATIVE_OPTIMIZATION
-  #ENABLE_SANITIZER_ADDRESS
-  #ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-  #ENABLE_SANITIZER_THREAD
-  #ENABLE_SANITIZER_MEMORY
-  #ENABLE_INCLUDE_WHAT_YOU_USE
   ENABLE_CONAN
   ENABLE_PCH
   PCH_HEADERS
@@ -77,61 +85,31 @@ dynamic_project_options(
 # [config:files] [configure files]
 configure_file(
   ../../include/configured_files/metadata.hpp.in
-  ../../include/configured_files/metadata.hpp
-)
+  ../../include/configured_files/metadata.hpp)
 
-add_executable(
-  "${PROJECT_NAME}"
-    ../../src/main.cpp
-)
+# [target:src]
+add_executable("${PROJECT_NAME}"
+  ../../src/main.cpp)
 
-target_link_libraries(
-  "${PROJECT_NAME}"
-    PRIVATE
-      project_options
-      project_warnings
-)
-
-target_include_directories(
-  "${PROJECT_NAME}"
-    PRIVATE
-      ../../include
-      ../../include/
-)
-
-# [deps:threads]
-if(APPLE)
-  set(CMAKE_THREAD_LIBS_INIT       -lpthread)
-  set(CMAKE_HAVE_THREADS_LIBRARY   1)
-  set(CMAKE_USE_WIN32_THREADS_INIT 0)
-  set(CMAKE_USE_PTHREADS_INIT      1)
-  set(THREADS_PREFER_PTHREAD_FLAG  ON)
-  find_package(Threads REQUIRED)
-else()
-  set(DEPENDENCIES_CONFIGURED Threads)
-  foreach(DEPENDENCY ${DEPENDENCIES_CONFIGURED})
-    find_package(${DEPENDENCY} CONFIG REQUIRED)
-endforeach()
-endif()
+# [target:include]
+target_include_directories("${PROJECT_NAME}" PRIVATE
+  ../../include)
 
 # [build:link]
-target_link_libraries(
-  "${PROJECT_NAME}"
-    PRIVATE
-      Threads::Threads
-      Boost::headers
-      Boost::program_options
+target_link_libraries("${PROJECT_NAME}" PRIVATE
+  project_options
+  project_warnings
+  Threads::Threads
+  Boost::headers
+  Boost::program_options
 )
 
 set(CPACK_PACKAGE_FILE_NAME_DIST
-    "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}"
-)
+  "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}")
 set(CPACK_PACKAGE_FILE_NAME_BUILD
-    "${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
-)
+  "${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
 set(CPACK_PACKAGE_FILE_NAME
-    "${CPACK_PACKAGE_FILE_NAME_DIST}-${CPACK_PACKAGE_FILE_NAME_BUILD}"
-)
+  "${CPACK_PACKAGE_FILE_NAME_DIST}-${CPACK_PACKAGE_FILE_NAME_BUILD}")
 
 include(CPack)
 
@@ -195,6 +173,11 @@ include(CPack)
 #     CLANG_WARNINGS
 #     override the defaults for the GCC warnings
 #     GCC_WARNINGS
+#     ENABLE_SANITIZER_ADDRESS
+#     ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+#     ENABLE_SANITIZER_THREAD
+#     ENABLE_SANITIZER_MEMORY
+#     ENABLE_INCLUDE_WHAT_YOU_USE
 # [config:files] [configure files]
 #   - notes:
 #     use ESCAPE_QUOTES in the call to
