@@ -21,7 +21,7 @@
 #include <vector>
 
 auto main(int argc, char* argv[]) -> int try {
-  constexpr const auto thread_count{7};
+  constexpr auto thread_count{7};
   const auto po{river::program_options(argc, argv)};
   auto ioc{boost::asio::io_context{thread_count}};
   auto thread_pool{std::map<int, std::thread>{}};
@@ -42,5 +42,5 @@ auto main(int argc, char* argv[]) -> int try {
 
   return 0;
 } catch (std::exception const& e) {
-  info::fatal("fatal standard exception", std::move(e.what()));
+  info::fatal("fatal standard exception", e.what());
 }
