@@ -6,6 +6,8 @@ echo build/build
 echo build/out/`tell workspace`.`tell name`
 - given run
 echo `tell exe`
+- given bun
+echo eval `tell build`' && eval '`tell run`
 - given clean
 echo 'rm -rf build/out/* build/out/.cache build/out/.ninja_* ; unlink compile_commands.json'
 
